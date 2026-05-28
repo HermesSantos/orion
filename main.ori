@@ -1,0 +1,5 @@
+[string] names = ["joao", "maria"]
+
+for i, value in names {
+    io::write(value)
+}
