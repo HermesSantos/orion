@@ -36,5 +36,16 @@ func main() {
 		fmt.Println(value)
 	}
 	func() { names = append(names, "gusta") }()
+	func() interface{} { val := names[len(names)-1]; names = names[:len(names)-1]; return val }()
+	func() {
+		for _i, _v := range names {
+			if fmt.Sprintf("%v", _v) == fmt.Sprintf("%v", "hermes") {
+				names = append(names[:_i], names[_i+1:]...)
+				break
+			}
+		}
+	}()
+	fmt.Println(names[0])
+	fmt.Println(names[len(names)-1])
 	fmt.Println(names)
 }

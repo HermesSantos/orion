@@ -111,7 +111,6 @@ var keywords = map[string]TokenType{
 	"or_if":   TOKEN_OR_IF,
 	"or":      TOKEN_OR,
 	"for":     TOKEN_FOR,
-	"in":      TOKEN_IN,
 	"true":    TOKEN_BOOL,
 	"false":   TOKEN_BOOL,
 	"string":  TOKEN_TYPE_STRING,

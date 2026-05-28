@@ -297,7 +297,7 @@ func (p *Parser) parseIfStmt() (ast.Node, error) {
 func (p *Parser) parseForStmt() (ast.Node, error) {
 	p.advance() // consume 'for'
 
-	// for index, value in { body }
+	// for index, value :: target { body }
 	indexTok, err := p.expect(lexer.TOKEN_IDENT)
 	if err != nil {
 		return nil, err
@@ -309,11 +309,11 @@ func (p *Parser) parseForStmt() (ast.Node, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := p.expect(lexer.TOKEN_IN); err != nil {
+	if _, err := p.expect(lexer.TOKEN_DCOLON); err != nil {
 		return nil, err
 	}
 
-	// Optional target variable after `in`
+	// Collection to iterate over
 	target := ""
 	if p.peek().Type == lexer.TOKEN_IDENT {
 		target = p.advance().Literal

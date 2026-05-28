@@ -1,5 +1,5 @@
 [string] names = ["joao", "maria"]
 
-for i, value in names {
+for i, value :: names {
     io::write(value)
 }

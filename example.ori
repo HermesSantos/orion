@@ -26,7 +26,7 @@ writeScreen();
 
 //array
 [string] names = ["hermes", "lucas"];
-for index, value in names {
+for index, value :: names {
 	io::write(value);
 }
 

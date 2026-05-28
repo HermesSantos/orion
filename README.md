@@ -62,7 +62,7 @@ writeScreen();
 [string] names = ["hermes", "lucas"];
 
 // Iteração
-for index, value in names {
+for index, value :: names {
     io::write(value);
 }
 

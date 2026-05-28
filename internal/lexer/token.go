@@ -21,7 +21,6 @@ const (
 	TOKEN_OR_IF   TokenType = "or_if"
 	TOKEN_OR      TokenType = "or"
 	TOKEN_FOR     TokenType = "for"
-	TOKEN_IN      TokenType = "in"
 	TOKEN_RETURN  TokenType = "return"
 
 	// Operators
