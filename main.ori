@@ -1,5 +1,0 @@
-[string] names = ["joao", "maria"]
-
-for i, value :: names {
-    io::write(value)
-}

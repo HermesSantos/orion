@@ -1,0 +1,7 @@
+[string] names = ["sasuke", "itachi"]
+
+io::write(names)
+
+names:push("naruto")
+
+io::write(names)
