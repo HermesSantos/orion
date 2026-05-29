@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orion — Documentação</title>
+  <link rel="icon" href="../orion_logo.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --bg-elevated: #111111;
+      --bg-sidebar: #0d0d0d;
+      --bg-code: #161616;
+      --border: #1e1e1e;
+      --border-subtle: #252525;
+      --text: #a1a1aa;
+      --text-muted: #71717a;
+      --text-heading: #fafafa;
+      --blue: #2e67f8;
+      --blue-bright: #4d8bff;
+      --blue-dim: #1a4fd4;
+      --blue-glow: rgba(46, 103, 248, 0.15);
+      --navy: #0a2463;
+      --sidebar-width: 280px;
+      --toc-width: 220px;
+      --header-height: 56px;
+      --radius: 8px;
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-height) + 24px); }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    .header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--header-height);
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 24px;
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .header-logo img {
+      height: 28px;
+      width: auto;
+    }
+
+    .header-logo span {
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.12em;
+      color: var(--text-heading);
+    }
+
+    .header-search {
+      flex: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .header-search input {
+      width: 100%;
+      padding: 8px 16px 8px 40px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-heading);
+      font-family: var(--font);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .header-search input::placeholder { color: var(--text-muted); }
+
+    .header-search input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px var(--blue-glow);
+    }
+
+    .header-search svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      width: 16px;
+      height: 16px;
+    }
+
+    .header-search kbd {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: var(--font);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+    }
+
+    .header-version {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-elevated);
+      cursor: default;
+      flex-shrink: 0;
+    }
+
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      padding-top: var(--header-height);
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      width: var(--sidebar-width);
+      height: calc(100vh - var(--header-height));
+      overflow-y: auto;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      z-index: 50;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+
+    .nav-section { margin-bottom: 8px; }
+
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding: 8px 24px 4px;
+    }
+
+    .nav-link {
+      display: block;
+      padding: 6px 24px;
+      font-size: 14px;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+    }
+
+    .nav-link:hover {
+      color: var(--text-heading);
+      background: rgba(46, 103, 248, 0.05);
+    }
+
+    .nav-link.active {
+      color: var(--blue-bright);
+      border-left-color: var(--blue);
+      background: var(--blue-glow);
+      font-weight: 500;
+    }
+
+    /* ── Main ── */
+    .main {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .content {
+      max-width: 720px;
+      width: 100%;
+      padding: 48px 40px 120px;
+    }
+
+    /* ── TOC ── */
+    .toc {
+      position: fixed;
+      top: var(--header-height);
+      right: 0;
+      width: var(--toc-width);
+      height: calc(100vh - var(--header-height));
+      overflow-y: auto;
+      padding: 48px 24px;
+      border-left: 1px solid var(--border);
+    }
+
+    .toc-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toc-link {
+      display: block;
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 4px 0 4px 12px;
+      border-left: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+      line-height: 1.5;
+    }
+
+    .toc-link:hover { color: var(--text-heading); }
+
+    .toc-link.active {
+      color: var(--blue-bright);
+      border-left-color: var(--blue);
+    }
+
+    .toc-link.sub { padding-left: 24px; font-size: 12px; }
+
+    /* ── Typography ── */
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+      padding-bottom: 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero img {
+      width: 180px;
+      margin-bottom: 24px;
+    }
+
+    .hero p {
+      font-size: 17px;
+      color: var(--text);
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    h1, h2, h3 {
+      color: var(--text-heading);
+      font-weight: 600;
+      scroll-margin-top: calc(var(--header-height) + 24px);
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h1 .hash { color: var(--blue); font-weight: 700; }
+
+    h2 {
+      font-size: 22px;
+      margin-top: 48px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h2 .hash { color: var(--blue); font-weight: 700; font-size: 22px; }
+
+    h3 {
+      font-size: 17px;
+      margin-top: 32px;
+      margin-bottom: 12px;
+    }
+
+    p { margin-bottom: 16px; }
+
+    a { color: var(--blue-bright); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    strong { color: var(--text-heading); font-weight: 600; }
+
+    code:not(pre code) {
+      font-family: var(--mono);
+      font-size: 0.875em;
+      background: var(--bg-code);
+      color: var(--blue-bright);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 48px 0;
+    }
+
+    /* ── Code blocks ── */
+    .code-block {
+      position: relative;
+      margin: 16px 0 24px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      background: var(--bg-code);
+    }
+
+    .code-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .code-block-header .lang {
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .copy-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-family: var(--font);
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .copy-btn:hover {
+      color: var(--text-heading);
+      border-color: var(--blue);
+    }
+
+    .copy-btn.copied { color: var(--blue-bright); border-color: var(--blue); }
+
+    pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.6;
+      tab-size: 4;
+    }
+
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+
+    .ln {
+      display: inline-block;
+      width: 28px;
+      color: var(--text-muted);
+      opacity: 0.5;
+      user-select: none;
+      text-align: right;
+      margin-right: 16px;
+    }
+
+    .tok-kw { color: #7aa2f7; }
+    .tok-type { color: #2e67f8; }
+    .tok-str { color: #9ece6a; }
+    .tok-num { color: #ff9e64; }
+    .tok-bool { color: #bb9af7; }
+    .tok-fn { color: #7dcfff; }
+    .tok-op { color: #89ddff; }
+    .tok-comment { color: #565f89; font-style: italic; }
+    .tok-cmd { color: #9ece6a; }
+
+    /* ── Table ── */
+    .table-wrap {
+      overflow-x: auto;
+      margin: 16px 0 24px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: var(--bg-elevated);
+      color: var(--text-heading);
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    td code { font-size: 13px; }
+
+    /* ── File tree ── */
+    .file-tree {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.8;
+      margin: 16px 0 24px;
+      overflow-x: auto;
+    }
+
+    .file-tree .dir { color: var(--blue-bright); }
+    .file-tree .file { color: var(--text); }
+    .file-tree .comment { color: var(--text-muted); }
+
+    /* ── Callout ── */
+    .callout {
+      border-left: 3px solid var(--blue);
+      background: var(--blue-glow);
+      padding: 16px 20px;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      margin: 16px 0 24px;
+      font-size: 14px;
+    }
+
+    .callout strong { color: var(--blue-bright); }
+
+    /* ── Search results ── */
+    .search-hidden { display: none !important; }
+
+    .no-results {
+      display: none;
+      text-align: center;
+      padding: 48px;
+      color: var(--text-muted);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1200px) {
+      .toc { display: none; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+      }
+
+      .sidebar.open { transform: translateX(0); }
+
+      .main { margin-left: 0; }
+
+      .content { padding: 32px 20px 80px; }
+
+      .header-search { display: none; }
+
+      .menu-toggle { display: block; }
+
+      .header-version { display: none; }
+
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        top: var(--header-height);
+        background: rgba(0,0,0,0.6);
+        z-index: 40;
+      }
+
+      .sidebar-overlay.open { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+    <a href="#" class="header-logo">
+      <img src="../orion_logo.png" alt="Orion">
+      <span>ORION</span>
+    </a>
+    <div class="header-search">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="search" id="searchInput" placeholder="Buscar na documentação…" autocomplete="off">
+      <kbd>Ctrl K</kbd>
+    </div>
+    <div class="header-version">v0.1</div>
+  </header>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <div class="nav-section">
+        <div class="nav-section-title">Prólogo</div>
+        <a href="#introducao" class="nav-link">Introdução</a>
+        <a href="#como-usar" class="nav-link">Como usar</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Linguagem</div>
+        <a href="#variaveis" class="nav-link">Variáveis</a>
+        <a href="#condicionais" class="nav-link">Condicionais</a>
+        <a href="#funcoes" class="nav-link">Funções</a>
+        <a href="#arrays" class="nav-link">Arrays</a>
+        <a href="#strings" class="nav-link">Strings</a>
+        <a href="#io" class="nav-link">I/O</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Referência</div>
+        <a href="#tipos" class="nav-link">Mapeamento de tipos</a>
+        <a href="#estrutura" class="nav-link">Estrutura do projeto</a>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="main">
+      <article class="content" id="content">
+
+        <div class="hero" id="introducao">
+          <img src="../orion_logo.png" alt="Orion logo">
+          <p>Transpilador da linguagem <strong>Orion</strong> para <strong>Go</strong>, escrito em Go. Uma linguagem simples e expressiva com sintaxe própria.</p>
+        </div>
+
+        <h1><span class="hash">#</span> Como usar</h1>
+        <p id="como-usar">Instale e compile o transpilador, depois transpile arquivos <code>.ori</code> para Go.</p>
+
+        <div class="code-block" data-lang="bash">
+          <div class="code-block-header">
+            <span class="lang">terminal</span>
+            <button class="copy-btn" aria-label="Copiar">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span><span class="tok-comment"># Construir o transpilador</span>
+<span class="ln">2</span>go build -o orionc ./cmd/orion/main.go
+<span class="ln">3</span>
+<span class="ln">4</span><span class="tok-comment"># Transpilar um arquivo .ori</span>
+<span class="ln">5</span>./orionc meu_programa.ori
+<span class="ln">6</span>
+<span class="ln">7</span><span class="tok-comment"># Transpilar e executar</span>
+<span class="ln">8</span>./orionc -run meu_programa.ori
+<span class="ln">9</span>
+<span class="ln">10</span><span class="tok-comment"># Ver tokens e AST (debug)</span>
+<span class="ln">11</span>./orionc -debug meu_programa.ori</code></pre>
+        </div>
+
+        <div class="callout">
+          <strong>Dica:</strong> Use a flag <code>-run</code> para transpilar e executar o programa Go gerado em um único passo.
+        </div>
+
+        <hr>
+
+        <h1><span class="hash">#</span> Sintaxe Orion</h1>
+        <p>A linguagem Orion possui tipagem estática, interpolação de strings e uma sintaxe de condicionais encadeada única.</p>
+
+        <h2 id="variaveis"><span class="hash">#</span> Variáveis</h2>
+        <p>Declare variáveis com tipo explícito usando <code>tipo nome = valor</code>.</p>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copiar">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span><span class="tok-type">string</span> name = <span class="tok-str">"hermes"</span>;
+<span class="ln">2</span><span class="tok-type">integer</span> age = <span class="tok-num">45</span>;
+<span class="ln">3</span><span class="tok-type">bool</span> is_male = <span class="tok-bool">true</span>;
+<span class="ln">4</span><span class="tok-type">float</span> pi = <span class="tok-num">3.14</span>;</code></pre>
+        </div>
+
+        <h2 id="condicionais"><span class="hash">#</span> Condicionais</h2>
+        <p>Orion usa <code>if</code>, <code>or_if</code> e <code>or</code> para condicionais encadeadas — equivalente a <code>if / else if / else</code> em outras linguagens.</p>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copiar">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span><span class="tok-kw">if</span> is_male {
+<span class="ln">2</span>    io::<span class="tok-fn">write</span>(<span class="tok-str">"is male"</span>);
+<span class="ln">3</span>} <span class="tok-kw">or_if</span> age &gt; <span class="tok-num">30</span> {
+<span class="ln">4</span>    io::<span class="tok-fn">write</span>(<span class="tok-str">"older"</span>);
+<span class="ln">5</span>} <span class="tok-kw">or</span> {
+<span class="ln">6</span>    io::<span class="tok-fn">write</span>(<span class="tok-str">"default"</span>);
+<span class="ln">7</span>}</code></pre>
+        </div>
+
+        <h2 id="funcoes"><span class="hash">#</span> Funções</h2>
+
+        <h3>Com retorno</h3>
+        <p>Funções com tipo de retorno usam <code>::(...)</code> para retorno implícito com interpolação de strings.</p>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copiar">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span><span class="tok-type">string</span> <span class="tok-fn">helloName</span> (<span class="tok-type">string</span> name) {
+<span class="ln">2</span>    ::(<span class="tok-str">"hello, $name !"</span>);   <span class="tok-comment">// retorno implícito</span>
+<span class="ln">3</span>}
+<span class="ln">4</span><span class="tok-type">string</span> hello = <span class="tok-fn">helloName</span>(<span class="tok-str">"hermes"</span>);</code></pre>
+        </div>
+
+        <h3>Void (sem retorno)</h3>
+        <p>Funções sem tipo de retorno executam efeitos colaterais como I/O.</p>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copiar">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span><span class="tok-fn">writeScreen</span> () {
+<span class="ln">2</span>    io::<span class="tok-fn">write</span>(<span class="tok-str">"hello, world"</span>);
+<span class="ln">3</span>}
+<span class="ln">4</span><span class="tok-fn">writeScreen</span>();</code></pre>
+        </div>
+
+        <h2 id="arrays"><span class="hash">#</span> Arrays</h2>
+        <p>Arrays tipados com sintaxe <code>[T]</code> e métodos encadeados com <code>:</code>.</p>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copiar">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span>[<span class="tok-type">string</span>] names = [<span class="tok-str">"hermes"</span>, <span class="tok-str">"lucas"</span>];
+<span class="ln">2</span>
+<span class="ln">3</span><span class="tok-comment">// Iteração</span>
+<span class="ln">4</span><span class="tok-kw">for</span> index, value :: names {
+<span class="ln">5</span>    io::<span class="tok-fn">write</span>(value);
+<span class="ln">6</span>}
+<span class="ln">7</span>
+<span class="ln">8</span><span class="tok-comment">// Métodos de array</span>
+<span class="ln">9</span>names:<span class="tok-fn">push</span>(<span class="tok-str">"gusta"</span>);
+<span class="ln">10</span>names:<span class="tok-fn">pop</span>();
+<span class="ln">11</span>names:<span class="tok-fn">first</span>();
+<span class="ln">12</span>names:<span class="tok-fn">last</span>();
+<span class="ln">13</span>names:<span class="tok-fn">remove</span>(<span class="tok-num">0</span>);
+<span class="ln">14</span>names:<span class="tok-fn">removeValue</span>(<span class="tok-str">"hermes"</span>);</code></pre>
+        </div>
+
+        <h2 id="strings"><span class="hash">#</span> Interpolação de strings</h2>
+        <p>Variáveis são interpoladas com o prefixo <code>$</code> dentro de strings.</p>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copiar">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span><span class="tok-type">string</span> greeting = <span class="tok-str">"hello, $name !"</span>;</code></pre>
+        </div>
+
+        <h2 id="io"><span class="hash">#</span> I/O</h2>
+        <p>Entrada e saída via namespace <code>io::</code>.</p>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copiar">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span>io::<span class="tok-fn">write</span>(<span class="tok-str">"hello, world"</span>);
+<span class="ln">2</span>io::<span class="tok-fn">write</span>(variable);</code></pre>
+        </div>
+
+        <hr>
+
+        <h1 id="tipos"><span class="hash">#</span> Mapeamento de tipos</h1>
+        <p>Orion transpila para Go com os seguintes mapeamentos de tipos:</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Orion</th>
+                <th>Go</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>string</code></td><td><code>string</code></td></tr>
+              <tr><td><code>integer</code></td><td><code>int</code></td></tr>
+              <tr><td><code>bool</code></td><td><code>bool</code></td></tr>
+              <tr><td><code>float</code></td><td><code>float64</code></td></tr>
+              <tr><td><code>[T]</code></td><td><code>[]T</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h1 id="estrutura"><span class="hash">#</span> Estrutura do projeto</h1>
+        <p>Organização interna do transpilador Orion.</p>
+
+        <div class="file-tree">
+<span class="dir">orion/</span>
+├── <span class="dir">cmd/orion/</span><span class="file">main.go</span>          <span class="comment"># CLI</span>
+├── <span class="dir">internal/</span>
+│   ├── <span class="dir">lexer/</span>
+│   │   ├── <span class="file">token.go</span>           <span class="comment"># Definição de tokens</span>
+│   │   └── <span class="file">lexer.go</span>           <span class="comment"># Tokenizador</span>
+│   ├── <span class="dir">parser/</span>
+│   │   └── <span class="file">parser.go</span>          <span class="comment"># Parser (tokens → AST)</span>
+│   ├── <span class="dir">ast/</span>
+│   │   └── <span class="file">ast.go</span>             <span class="comment"># Nós da AST</span>
+│   └── <span class="dir">codegen/</span>
+│       └── <span class="file">codegen.go</span>         <span class="comment"># Gerador de código Go</span>
+├── <span class="file">example.ori</span>                <span class="comment"># Exemplo de código Orion</span>
+└── <span class="file">go.mod</span>
+        </div>
+
+      </article>
+    </main>
+
+    <!-- Table of contents -->
+    <aside class="toc" id="toc">
+      <div class="toc-title">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        Nesta página
+      </div>
+      <a href="#introducao" class="toc-link">Introdução</a>
+      <a href="#como-usar" class="toc-link">Como usar</a>
+      <a href="#variaveis" class="toc-link">Variáveis</a>
+      <a href="#condicionais" class="toc-link">Condicionais</a>
+      <a href="#funcoes" class="toc-link">Funções</a>
+      <a href="#arrays" class="toc-link">Arrays</a>
+      <a href="#strings" class="toc-link">Strings</a>
+      <a href="#io" class="toc-link">I/O</a>
+      <a href="#tipos" class="toc-link">Mapeamento de tipos</a>
+      <a href="#estrutura" class="toc-link">Estrutura do projeto</a>
+    </aside>
+
+  </div>
+
+  <script>
+    // Copy buttons
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pre = btn.closest('.code-block').querySelector('pre');
+        const text = pre.textContent.replace(/^\s*\d+\s*/gm, '');
+        navigator.clipboard.writeText(text.trim()).then(() => {
+          btn.classList.add('copied');
+          btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Copiado';
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copiar';
+          }, 2000);
+        });
+      });
+    });
+
+    // Scroll spy — sidebar + TOC
+    const sections = document.querySelectorAll('[id]');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const tocLinks = document.querySelectorAll('.toc-link');
+
+    function setActive(id) {
+      navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+      tocLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) setActive(entry.target.id);
+      });
+    }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
+
+    sections.forEach(s => { if (s.id) observer.observe(s); });
+
+    // Mobile menu
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    menuToggle.addEventListener('click', () => {
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+    });
+
+    overlay.addEventListener('click', closeSidebar);
+    navLinks.forEach(l => l.addEventListener('click', closeSidebar));
+
+    // Search (Ctrl+K)
+    const searchInput = document.getElementById('searchInput');
+
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        searchInput.focus();
+      }
+      if (e.key === 'Escape') searchInput.blur();
+    });
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.toLowerCase().trim();
+      const blocks = document.querySelectorAll('.content > *');
+
+      if (!q) {
+        blocks.forEach(b => b.classList.remove('search-hidden'));
+        return;
+      }
+
+      let visible = false;
+      blocks.forEach(b => {
+        const match = b.textContent.toLowerCase().includes(q);
+        b.classList.toggle('search-hidden', !match);
+        if (match) visible = true;
+      });
+    });
+  </script>
+</body>
+</html>
