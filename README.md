@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="orion_logo.png" alt="Orion logo" width="280">
+</p>
+
 # Orion → Go Transpiler
 
 Transpilador da linguagem **Orion** para **Go**, escrito em Go.
