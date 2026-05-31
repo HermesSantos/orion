@@ -20,7 +20,7 @@ func main() {
 		debug  = flag.Bool("debug", false, "Print tokens and AST for debugging")
 	)
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Orion transpiler v0.1\n\nUsage:\n  orion [flags] <input.ori>\n\nFlags:\n")
+		fmt.Fprintf(os.Stderr, "Orion transpiler v0.1\n\nUsage:\n  orion [flags] <input.or>\n\nFlags:\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
@@ -31,6 +31,9 @@ func main() {
 		os.Exit(1)
 	}
 	inputFile := args[0]
+	if filepath.Ext(inputFile) != ".or" {
+		fatalf("input file must have .or extension, got %q", filepath.Ext(inputFile))
+	}
 
 	src, err := os.ReadFile(inputFile)
 	if err != nil {

@@ -7,10 +7,10 @@ import (
 )
 
 type Lexer struct {
-	input  []rune
-	pos    int
-	line   int
-	col    int
+	input []rune
+	pos   int
+	line  int
+	col   int
 }
 
 func New(input string) *Lexer {
@@ -185,37 +185,44 @@ func (l *Lexer) Tokenize() ([]Token, error) {
 			continue
 		}
 		if ch == '=' && l.peekAt(1) == '=' {
-			l.advance(); l.advance()
+			l.advance()
+			l.advance()
 			tokens = append(tokens, Token{TOKEN_EQ, "==", line, col})
 			continue
 		}
 		if ch == '!' && l.peekAt(1) == '=' {
-			l.advance(); l.advance()
+			l.advance()
+			l.advance()
 			tokens = append(tokens, Token{TOKEN_NEQ, "!=", line, col})
 			continue
 		}
 		if ch == '<' && l.peekAt(1) == '=' {
-			l.advance(); l.advance()
+			l.advance()
+			l.advance()
 			tokens = append(tokens, Token{TOKEN_LTE, "<=", line, col})
 			continue
 		}
 		if ch == '>' && l.peekAt(1) == '=' {
-			l.advance(); l.advance()
+			l.advance()
+			l.advance()
 			tokens = append(tokens, Token{TOKEN_GTE, ">=", line, col})
 			continue
 		}
 		if ch == '&' && l.peekAt(1) == '&' {
-			l.advance(); l.advance()
+			l.advance()
+			l.advance()
 			tokens = append(tokens, Token{TOKEN_AND, "&&", line, col})
 			continue
 		}
 		if ch == '|' && l.peekAt(1) == '|' {
-			l.advance(); l.advance()
+			l.advance()
+			l.advance()
 			tokens = append(tokens, Token{TOKEN_OR_OP, "||", line, col})
 			continue
 		}
 		if ch == '-' && l.peekAt(1) == '>' {
-			l.advance(); l.advance()
+			l.advance()
+			l.advance()
 			tokens = append(tokens, Token{TOKEN_ARROW, "->", line, col})
 			continue
 		}
