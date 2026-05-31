@@ -4,29 +4,29 @@
 
 # Orion → Go Transpiler
 
-Transpilador da linguagem **Orion** para **Go**, escrito em Go.
+Transpiler for the **Orion** language to **Go**, written in Go.
 
-## Como usar
+## Usage
 
 ```bash
-# Construir o transpilador
+# Build the transpiler
 go build -o orionc ./cmd/orion/main.go
 
-# Transpilar um arquivo .ori
-./orionc meu_programa.ori
+# Transpile a .ori file
+./orionc my_program.ori
 
-# Transpilar e executar
-./orionc -run meu_programa.ori
+# Transpile and run
+./orionc -run my_program.ori
 
-# Ver tokens e AST (debug)
-./orionc -debug meu_programa.ori
+# View tokens and AST (debug)
+./orionc -debug my_program.ori
 ```
 
 ---
 
-## Sintaxe Orion
+## Orion syntax
 
-### Variáveis
+### Variables
 ```orion
 string name = "hermes";
 integer age = 45;
@@ -34,7 +34,7 @@ bool is_male = true;
 float pi = 3.14;
 ```
 
-### Condicionais (`if / or_if / or`)
+### Conditionals (`if / or_if / or`)
 ```orion
 if is_male {
     io::write("is male");
@@ -45,15 +45,15 @@ if is_male {
 }
 ```
 
-### Funções com retorno
+### Functions with return values
 ```orion
 string helloName (string name) {
-    ::("hello, $name !");   // retorno implícito com interpolação
+    ::("hello, $name !");   // implicit return with interpolation
 }
 string hello = helloName("hermes");
 ```
 
-### Funções void
+### Void functions
 ```orion
 writeScreen () {
     io::write("hello, world");
@@ -65,12 +65,12 @@ writeScreen();
 ```orion
 [string] names = ["hermes", "lucas"];
 
-// Iteração
+// Iteration
 for index, value :: names {
     io::write(value);
 }
 
-// Métodos de array
+// Array methods
 names:push("gusta");
 names:pop();
 names:first();
@@ -79,7 +79,7 @@ names:remove(0);
 names:removeValue("hermes");
 ```
 
-### Interpolação de strings
+### String interpolation
 ```orion
 string greeting = "hello, $name !";
 ```
@@ -92,26 +92,26 @@ io::write(variable);
 
 ---
 
-## Estrutura do projeto
+## Project structure
 
 ```
 orion/
 ├── cmd/orion/main.go          # CLI
 ├── internal/
 │   ├── lexer/
-│   │   ├── token.go           # Definição de tokens
-│   │   └── lexer.go           # Tokenizador
+│   │   ├── token.go           # Token definitions
+│   │   └── lexer.go           # Tokenizer
 │   ├── parser/
 │   │   └── parser.go          # Parser (tokens → AST)
 │   ├── ast/
-│   │   └── ast.go             # Nós da AST
+│   │   └── ast.go             # AST nodes
 │   └── codegen/
-│       └── codegen.go         # Gerador de código Go
-├── example.ori                # Exemplo de código Orion
+│       └── codegen.go         # Go code generator
+├── example.ori                # Orion example
 └── go.mod
 ```
 
-## Mapeamento de tipos
+## Type mapping
 
 | Orion     | Go        |
 |-----------|-----------|
