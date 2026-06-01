@@ -408,6 +408,17 @@ func (g *Generator) genExpr(node ast.Node) (string, error) {
 		}
 		return fmt.Sprintf("[]interface{}{%s}", strings.Join(vals, ", ")), nil
 
+	case *ast.IndexExpr:
+		obj, err := g.genExpr(n.Object)
+		if err != nil {
+			return "", err
+		}
+		idx, err := g.genExpr(n.Index)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%s[%s]", obj, idx), nil
+
 	default:
 		return "", fmt.Errorf("unknown expression node: %T", node)
 	}

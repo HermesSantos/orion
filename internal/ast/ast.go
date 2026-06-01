@@ -175,3 +175,11 @@ type UnaryExpr struct {
 }
 
 func (u *UnaryExpr) nodeType() string { return "UnaryExpr" }
+
+// IndexExpr is array/slice access: arr[index]
+type IndexExpr struct {
+	Object Node
+	Index  Node
+}
+
+func (i *IndexExpr) nodeType() string { return "IndexExpr" }

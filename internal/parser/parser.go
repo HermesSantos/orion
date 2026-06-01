@@ -508,9 +508,32 @@ func (p *Parser) parseUnary() (ast.Node, error) {
 		if err != nil {
 			return nil, err
 		}
+		operand, err = p.parsePostfix(operand)
+		if err != nil {
+			return nil, err
+		}
 		return &ast.UnaryExpr{Op: op, Operand: operand}, nil
 	}
-	return p.parsePrimary()
+	node, err := p.parsePrimary()
+	if err != nil {
+		return nil, err
+	}
+	return p.parsePostfix(node)
+}
+
+func (p *Parser) parsePostfix(node ast.Node) (ast.Node, error) {
+	for p.peek().Type == lexer.TOKEN_LBRACKET {
+		p.advance() // [
+		index, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+		if _, err := p.expect(lexer.TOKEN_RBRACKET); err != nil {
+			return nil, err
+		}
+		node = &ast.IndexExpr{Object: node, Index: index}
+	}
+	return node, nil
 }
 
 func (p *Parser) parsePrimary() (ast.Node, error) {

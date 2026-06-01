@@ -1,7 +1,3 @@
-[string] names = ["sasuke", "itachi"]
+[integer] arr = [1,2]
 
-io::write(names)
-
-names:push("naruto")
-
-io::write(names)
+io::write(arr[0])
