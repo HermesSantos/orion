@@ -345,25 +345,30 @@ func (p *Parser) parseArrayDecl() (ast.Node, error) {
 	if _, err := p.expect(lexer.TOKEN_ASSIGN); err != nil {
 		return nil, err
 	}
-	// Parse array literal [val, val, ...]
-	if _, err := p.expect(lexer.TOKEN_LBRACKET); err != nil {
-		return nil, err
-	}
-	var elems []ast.Node
-	for p.peek().Type != lexer.TOKEN_RBRACKET && p.peek().Type != lexer.TOKEN_EOF {
-		elem, err := p.parseExpr()
-		if err != nil {
+	// [type] name = [val, ...]  or  [type] name = expr
+	if p.peek().Type == lexer.TOKEN_LBRACKET {
+		p.advance()
+		var elems []ast.Node
+		for p.peek().Type != lexer.TOKEN_RBRACKET && p.peek().Type != lexer.TOKEN_EOF {
+			elem, err := p.parseExpr()
+			if err != nil {
+				return nil, err
+			}
+			elems = append(elems, elem)
+			if p.peek().Type == lexer.TOKEN_COMMA {
+				p.advance()
+			}
+		}
+		if _, err := p.expect(lexer.TOKEN_RBRACKET); err != nil {
 			return nil, err
 		}
-		elems = append(elems, elem)
-		if p.peek().Type == lexer.TOKEN_COMMA {
-			p.advance()
-		}
+		return &ast.ArrayDecl{ElemType: elemType, Name: nameTok.Literal, Elements: elems}, nil
 	}
-	if _, err := p.expect(lexer.TOKEN_RBRACKET); err != nil {
+	val, err := p.parseExpr()
+	if err != nil {
 		return nil, err
 	}
-	return &ast.ArrayDecl{ElemType: elemType, Name: nameTok.Literal, Elements: elems}, nil
+	return &ast.ArrayDecl{ElemType: elemType, Name: nameTok.Literal, Value: val}, nil
 }
 
 func (p *Parser) parseTupleDecl() (ast.Node, error) {
@@ -521,19 +526,60 @@ func (p *Parser) parseUnary() (ast.Node, error) {
 	return p.parsePostfix(node)
 }
 
-func (p *Parser) parsePostfix(node ast.Node) (ast.Node, error) {
-	for p.peek().Type == lexer.TOKEN_LBRACKET {
-		p.advance() // [
-		index, err := p.parseExpr()
-		if err != nil {
-			return nil, err
-		}
-		if _, err := p.expect(lexer.TOKEN_RBRACKET); err != nil {
-			return nil, err
-		}
-		node = &ast.IndexExpr{Object: node, Index: index}
+func (p *Parser) looksLikeArrayDeclAhead() bool {
+	if p.peek().Type != lexer.TOKEN_LBRACKET {
+		return false
 	}
-	return node, nil
+	save := p.pos
+	defer func() { p.pos = save }()
+	p.advance() // [
+	t := p.peek()
+	if t.Type != lexer.TOKEN_IDENT && !isTypeToken(t) {
+		return false
+	}
+	p.advance() // element type
+	if p.peek().Type != lexer.TOKEN_RBRACKET {
+		return false
+	}
+	p.advance() // ]
+	if p.peek().Type != lexer.TOKEN_IDENT {
+		return false
+	}
+	p.advance() // name
+	return p.peek().Type == lexer.TOKEN_ASSIGN
+}
+
+func (p *Parser) parsePostfix(node ast.Node) (ast.Node, error) {
+	for {
+		switch p.peek().Type {
+		case lexer.TOKEN_LBRACKET:
+			if p.looksLikeArrayDeclAhead() {
+				return node, nil
+			}
+			p.advance() // [
+			index, err := p.parseExpr()
+			if err != nil {
+				return nil, err
+			}
+			if _, err := p.expect(lexer.TOKEN_RBRACKET); err != nil {
+				return nil, err
+			}
+			node = &ast.IndexExpr{Object: node, Index: index}
+		case lexer.TOKEN_DOT:
+			p.advance() // .
+			methodTok, err := p.expect(lexer.TOKEN_IDENT)
+			if err != nil {
+				return nil, err
+			}
+			args, err := p.parseCallArgs()
+			if err != nil {
+				return nil, err
+			}
+			node = &ast.MethodCall{Object: node, Method: methodTok.Literal, Args: args}
+		default:
+			return node, nil
+		}
+	}
 }
 
 func (p *Parser) parsePrimary() (ast.Node, error) {
@@ -586,7 +632,7 @@ func (p *Parser) parsePrimary() (ast.Node, error) {
 			if err != nil {
 				return nil, err
 			}
-			return &ast.MethodCall{Object: name, Method: methodTok.Literal, Args: args}, nil
+			return &ast.MethodCall{Object: &ast.Identifier{Name: name}, Method: methodTok.Literal, Args: args}, nil
 		}
 
 		// function call: name(args)

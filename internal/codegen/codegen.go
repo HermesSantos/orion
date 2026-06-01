@@ -8,14 +8,17 @@ import (
 )
 
 type Generator struct {
-	sb        strings.Builder
-	indent    int
-	useFmt    bool
-	useFmtStr bool // for fmt.Sprintf in string interpolation
+	sb            strings.Builder
+	indent        int
+	useFmt        bool
+	useFmtStr     bool // for fmt.Sprintf in string interpolation
+	useStrconv    bool
+	env           map[string]string // variable name → Orion type
+	arrayElemHint string            // target element type during [T] x = expr
 }
 
 func New() *Generator {
-	return &Generator{}
+	return &Generator{env: make(map[string]string)}
 }
 
 func (g *Generator) ind() string {
@@ -30,7 +33,7 @@ func (g *Generator) mapType(orionType string) string {
 	switch orionType {
 	case "string":
 		return "string"
-	case "integer", "int":
+	case "integer", "int", "number":
 		return "int"
 	case "bool":
 		return "bool"
@@ -50,7 +53,7 @@ func (g *Generator) Generate(prog *ast.Program) (string, error) {
 		}
 	}
 
-	bodyGen := &Generator{indent: 1, useFmt: g.useFmt}
+	bodyGen := &Generator{indent: 1, useFmt: g.useFmt, env: make(map[string]string)}
 	for _, stmt := range prog.Stmts {
 		err := bodyGen.genStmt(stmt)
 		if err != nil {
@@ -58,12 +61,21 @@ func (g *Generator) Generate(prog *ast.Program) (string, error) {
 		}
 	}
 	bodyStr := bodyGen.sb.String()
+	g.useFmt = g.useFmt || bodyGen.useFmt
 	g.useFmtStr = bodyGen.useFmtStr
+	g.useStrconv = bodyGen.useStrconv
 
 	// Build final file
 	g.sb.WriteString("package main\n\n")
-	if g.useFmt || g.useFmtStr {
-		g.sb.WriteString("import \"fmt\"\n\n")
+	if g.useFmt || g.useFmtStr || g.useStrconv {
+		g.sb.WriteString("import (\n")
+		if g.useFmt || g.useFmtStr {
+			g.sb.WriteString("\t\"fmt\"\n")
+		}
+		if g.useStrconv {
+			g.sb.WriteString("\t\"strconv\"\n")
+		}
+		g.sb.WriteString(")\n\n")
 	}
 	g.sb.WriteString("func main() {\n")
 	g.sb.WriteString(bodyStr)
@@ -164,11 +176,23 @@ func (g *Generator) genVarDecl(n *ast.VarDecl) error {
 	}
 	g.line(fmt.Sprintf("var %s %s = %s", n.Name, goType, val))
 	g.line(fmt.Sprintf("_ = %s", n.Name))
+	g.env[n.Name] = n.TypeName
 	return nil
 }
 
 func (g *Generator) genArrayDecl(n *ast.ArrayDecl) error {
 	goType := g.mapType(n.ElemType)
+	if n.Value != nil {
+		g.arrayElemHint = n.ElemType
+		val, err := g.genExpr(n.Value)
+		g.arrayElemHint = ""
+		if err != nil {
+			return err
+		}
+		g.line(fmt.Sprintf("%s := %s", n.Name, val))
+		g.env[n.Name] = "[]" + n.ElemType
+		return nil
+	}
 	var elems []string
 	for _, e := range n.Elements {
 		s, err := g.genExpr(e)
@@ -178,6 +202,7 @@ func (g *Generator) genArrayDecl(n *ast.ArrayDecl) error {
 		elems = append(elems, s)
 	}
 	g.line(fmt.Sprintf("%s := []%s{%s}", n.Name, goType, strings.Join(elems, ", ")))
+	g.env[n.Name] = "[]" + n.ElemType
 	return nil
 }
 
@@ -424,54 +449,105 @@ func (g *Generator) genExpr(node ast.Node) (string, error) {
 	}
 }
 
+func (g *Generator) receiverType(n ast.Node) string {
+	switch v := n.(type) {
+	case *ast.Identifier:
+		return g.env[v.Name]
+	case *ast.IntLit:
+		return "integer"
+	case *ast.FloatLit:
+		return "float"
+	case *ast.StringLit:
+		return "string"
+	default:
+		return ""
+	}
+}
+
+func (g *Generator) objectName(n ast.Node) (string, error) {
+	id, ok := n.(*ast.Identifier)
+	if !ok {
+		return "", fmt.Errorf("method requires a variable receiver")
+	}
+	return id.Name, nil
+}
+
 func (g *Generator) genMethodCall(n *ast.MethodCall) (string, error) {
 	switch n.Method {
+	case "toArray":
+		if len(n.Args) != 0 {
+			return "", fmt.Errorf("toArray() takes no arguments")
+		}
+		return g.genToArray(n.Object)
+
 	case "push":
 		if len(n.Args) != 1 {
 			return "", fmt.Errorf("push() requires 1 argument")
+		}
+		objName, err := g.objectName(n.Object)
+		if err != nil {
+			return "", err
 		}
 		arg, err := g.genExpr(n.Args[0])
 		if err != nil {
 			return "", err
 		}
-		// emit as statement via side-effect: we return an assignment expression
-		// Since this runs inside genExpr, we need to emit a statement.
-		// We'll generate it as a special string that gets emitted directly.
-		return fmt.Sprintf("func() { %s = append(%s, %s) }()", n.Object, n.Object, arg), nil
+		return fmt.Sprintf("func() { %s = append(%s, %s) }()", objName, objName, arg), nil
 
 	case "pop":
-		return fmt.Sprintf("func() interface{} { val := %s[len(%s)-1]; %s = %s[:len(%s)-1]; return val }()", n.Object, n.Object, n.Object, n.Object, n.Object), nil
+		objName, err := g.objectName(n.Object)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("func() interface{} { val := %s[len(%s)-1]; %s = %s[:len(%s)-1]; return val }()", objName, objName, objName, objName, objName), nil
 
 	case "first":
-		return fmt.Sprintf("%s[0]", n.Object), nil
+		obj, err := g.genExpr(n.Object)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%s[0]", obj), nil
 
 	case "last":
-		return fmt.Sprintf("%s[len(%s)-1]", n.Object, n.Object), nil
+		obj, err := g.genExpr(n.Object)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%s[len(%s)-1]", obj, obj), nil
 
 	case "remove":
 		if len(n.Args) != 1 {
 			return "", fmt.Errorf("remove() requires 1 argument (index)")
 		}
+		objName, err := g.objectName(n.Object)
+		if err != nil {
+			return "", err
+		}
 		arg, err := g.genExpr(n.Args[0])
 		if err != nil {
 			return "", err
 		}
-		return fmt.Sprintf("func() { %s = append(%s[:%s], %s[%s+1:]...) }()", n.Object, n.Object, arg, n.Object, arg), nil
+		return fmt.Sprintf("func() { %s = append(%s[:%s], %s[%s+1:]...) }()", objName, objName, arg, objName, arg), nil
 
 	case "removeValue":
 		if len(n.Args) != 1 {
 			return "", fmt.Errorf("removeValue() requires 1 argument")
 		}
+		objName, err := g.objectName(n.Object)
+		if err != nil {
+			return "", err
+		}
 		arg, err := g.genExpr(n.Args[0])
 		if err != nil {
 			return "", err
 		}
+		g.useFmt = true
 		indent := strings.Repeat("\t", g.indent)
 		var sb2 strings.Builder
 		sb2.WriteString("func() {\n")
-		sb2.WriteString(indent + "\tfor _i, _v := range " + n.Object + " {\n")
+		sb2.WriteString(indent + "\tfor _i, _v := range " + objName + " {\n")
 		sb2.WriteString(indent + "\t\tif fmt.Sprintf(\"%v\", _v) == fmt.Sprintf(\"%v\", " + arg + ") {\n")
-		sb2.WriteString(indent + "\t\t\t" + n.Object + " = append(" + n.Object + "[:_i], " + n.Object + "[_i+1:]...)\n")
+		sb2.WriteString(indent + "\t\t\t" + objName + " = append(" + objName + "[:_i], " + objName + "[_i+1:]...)\n")
 		sb2.WriteString(indent + "\t\t\tbreak\n")
 		sb2.WriteString(indent + "\t\t}\n")
 		sb2.WriteString(indent + "\t}\n")
@@ -481,4 +557,66 @@ func (g *Generator) genMethodCall(n *ast.MethodCall) (string, error) {
 	default:
 		return "", fmt.Errorf("unknown method: %s", n.Method)
 	}
+}
+
+func isNumericElemType(t string) bool {
+	switch t {
+	case "integer", "int", "number":
+		return true
+	default:
+		return false
+	}
+}
+
+func (g *Generator) genToArray(receiver ast.Node) (string, error) {
+	obj, err := g.genExpr(receiver)
+	if err != nil {
+		return "", err
+	}
+	recvType := g.receiverType(receiver)
+	wantInts := isNumericElemType(g.arrayElemHint) || isNumericElemType(recvType)
+
+	if wantInts {
+		g.useStrconv = true
+		switch recvType {
+		case "integer", "int":
+			return fmt.Sprintf(`func(n int) []int {
+				s := strconv.Itoa(n)
+				out := make([]int, len(s))
+				for i := 0; i < len(s); i++ {
+					out[i] = int(s[i] - '0')
+				}
+				return out
+			}(%s)`, obj), nil
+		case "float":
+			return fmt.Sprintf(`func(f float64) []int {
+				s := strconv.FormatFloat(f, 'f', -1, 64)
+				var out []int
+				for i := 0; i < len(s); i++ {
+					if s[i] == '.' {
+						continue
+					}
+					out = append(out, int(s[i]-'0'))
+				}
+				return out
+			}(%s)`, obj), nil
+		default:
+			// string digits → []int ("12" → [1, 2])
+			return fmt.Sprintf(`func(s string) []int {
+				out := make([]int, len(s))
+				for i := 0; i < len(s); i++ {
+					out[i] = int(s[i] - '0')
+				}
+				return out
+			}(%s)`, obj), nil
+		}
+	}
+
+	return fmt.Sprintf(`func(s string) []string {
+		out := make([]string, len(s))
+		for i := 0; i < len(s); i++ {
+			out[i] = string(s[i])
+		}
+		return out
+	}(%s)`, obj), nil
 }

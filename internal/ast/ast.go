@@ -24,7 +24,8 @@ func (v *VarDecl) nodeType() string { return "VarDecl" }
 type ArrayDecl struct {
 	ElemType string
 	Name     string
-	Elements []Node
+	Elements []Node // literal [a, b, ...]
+	Value    Node   // expression (e.g. x.toArray())
 }
 
 func (a *ArrayDecl) nodeType() string { return "ArrayDecl" }
@@ -152,9 +153,9 @@ type ImplicitReturn struct {
 
 func (i *ImplicitReturn) nodeType() string { return "ImplicitReturn" }
 
-// array:method(args)
+// obj:method(args) or obj.method(args)
 type MethodCall struct {
-	Object string
+	Object Node
 	Method string
 	Args   []Node
 }
