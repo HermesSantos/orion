@@ -123,12 +123,60 @@ func (p *Parser) parseStatement() (ast.Node, error) {
 		}
 	}
 
+	// Assignment: arr[i] = x  or  name = x
+	if stmt, err := p.tryParseAssignment(); stmt != nil || err != nil {
+		return stmt, err
+	}
+
 	// Expression statement (func call, method call)
 	expr, err := p.parseExpr()
 	if err != nil {
 		return nil, err
 	}
 	return &ast.ExprStmt{Expr: expr}, nil
+}
+
+func (p *Parser) tryParseAssignment() (ast.Node, error) {
+	save := p.pos
+	left, err := p.parseLValue()
+	if err != nil {
+		p.pos = save
+		return nil, err
+	}
+	if left == nil || p.peek().Type != lexer.TOKEN_ASSIGN {
+		p.pos = save
+		return nil, nil
+	}
+	p.advance() // =
+	right, err := p.parseExpr()
+	if err != nil {
+		return nil, err
+	}
+	return &ast.AssignStmt{Left: left, Right: right}, nil
+}
+
+// parseLValue parses x or arr[i] or arr[a + b] (no method calls).
+func (p *Parser) parseLValue() (ast.Node, error) {
+	if p.peek().Type != lexer.TOKEN_IDENT {
+		return nil, nil
+	}
+	name := p.advance().Literal
+	node := ast.Node(&ast.Identifier{Name: name})
+	for p.peek().Type == lexer.TOKEN_LBRACKET {
+		if p.looksLikeArrayDeclAhead() {
+			break
+		}
+		p.advance() // [
+		index, err := p.parseExpr()
+		if err != nil {
+			return nil, err
+		}
+		if _, err := p.expect(lexer.TOKEN_RBRACKET); err != nil {
+			return nil, err
+		}
+		node = &ast.IndexExpr{Object: node, Index: index}
+	}
+	return node, nil
 }
 
 func (p *Parser) isTupleTypeDecl() bool {

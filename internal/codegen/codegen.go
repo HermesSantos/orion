@@ -152,6 +152,8 @@ func (g *Generator) genStmt(node ast.Node) error {
 			return err
 		}
 		g.line(expr)
+	case *ast.AssignStmt:
+		return g.genAssignStmt(n)
 	case *ast.ReturnStmt:
 		if n.Value != nil {
 			expr, err := g.genExpr(n.Value)
@@ -165,6 +167,19 @@ func (g *Generator) genStmt(node ast.Node) error {
 	default:
 		return fmt.Errorf("unknown statement node: %T", node)
 	}
+	return nil
+}
+
+func (g *Generator) genAssignStmt(n *ast.AssignStmt) error {
+	left, err := g.genExpr(n.Left)
+	if err != nil {
+		return err
+	}
+	right, err := g.genExpr(n.Right)
+	if err != nil {
+		return err
+	}
+	g.line(fmt.Sprintf("%s = %s", left, right))
 	return nil
 }
 
@@ -236,10 +251,16 @@ func (g *Generator) genFuncDecl(n *ast.FuncDecl) error {
 	g.line("")
 	g.line(fmt.Sprintf("%s := func(%s)%s {", n.Name, strings.Join(params, ", "), retType))
 	g.indent++
+	for _, p := range n.Params {
+		g.env[p.Name] = p.TypeName
+	}
 	for _, stmt := range n.Body {
 		if err := g.genStmt(stmt); err != nil {
 			return err
 		}
+	}
+	for _, p := range n.Params {
+		delete(g.env, p.Name)
 	}
 	g.indent--
 	g.line("}")
@@ -515,6 +536,16 @@ func (g *Generator) genMethodCall(n *ast.MethodCall) (string, error) {
 		}
 		return fmt.Sprintf("%s[len(%s)-1]", obj, obj), nil
 
+	case "length":
+		if len(n.Args) != 0 {
+			return "", fmt.Errorf("length() takes no arguments")
+		}
+		obj, err := g.genExpr(n.Object)
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("len(%s)", obj), nil
+
 	case "remove":
 		if len(n.Args) != 1 {
 			return "", fmt.Errorf("remove() requires 1 argument (index)")
@@ -579,7 +610,7 @@ func (g *Generator) genToArray(receiver ast.Node) (string, error) {
 	if wantInts {
 		g.useStrconv = true
 		switch recvType {
-		case "integer", "int":
+		case "integer", "int", "number":
 			return fmt.Sprintf(`func(n int) []int {
 				s := strconv.Itoa(n)
 				out := make([]int, len(s))
@@ -600,9 +631,18 @@ func (g *Generator) genToArray(receiver ast.Node) (string, error) {
 				}
 				return out
 			}(%s)`, obj), nil
-		default:
-			// string digits → []int ("12" → [1, 2])
+		case "string":
 			return fmt.Sprintf(`func(s string) []int {
+				out := make([]int, len(s))
+				for i := 0; i < len(s); i++ {
+					out[i] = int(s[i] - '0')
+				}
+				return out
+			}(%s)`, obj), nil
+		default:
+			// unknown receiver with [integer] target — treat as int
+			return fmt.Sprintf(`func(n int) []int {
+				s := strconv.Itoa(n)
 				out := make([]int, len(s))
 				for i := 0; i < len(s); i++ {
 					out[i] = int(s[i] - '0')

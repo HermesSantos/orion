@@ -87,6 +87,14 @@ type ExprStmt struct {
 
 func (e *ExprStmt) nodeType() string { return "ExprStmt" }
 
+// AssignStmt is assignment: target = value (variable or arr[i] = x)
+type AssignStmt struct {
+	Left  Node
+	Right Node
+}
+
+func (a *AssignStmt) nodeType() string { return "AssignStmt" }
+
 // --- Expressions ---
 
 type Identifier struct {

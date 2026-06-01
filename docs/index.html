@@ -569,6 +569,9 @@
         <a href="#conditionals" class="nav-link">Conditionals</a>
         <a href="#functions" class="nav-link">Functions</a>
         <a href="#arrays" class="nav-link">Arrays</a>
+        <a href="#array-indexing" class="nav-link" style="padding-left: 36px; font-size: 13px;">Indexing</a>
+        <a href="#array-methods" class="nav-link" style="padding-left: 36px; font-size: 13px;">Array methods</a>
+        <a href="#to-array" class="nav-link" style="padding-left: 36px; font-size: 13px;">toArray()</a>
         <a href="#strings" class="nav-link">Strings</a>
         <a href="#io" class="nav-link">I/O</a>
       </div>
@@ -589,7 +592,7 @@
         </div>
 
         <h1><span class="hash">#</span> Usage</h1>
-        <p id="usage">Build the transpiler, then transpile <code>.ori</code> files to Go.</p>
+        <p id="usage">Build the transpiler, then transpile <code>.or</code> files to Go.</p>
 
         <div class="code-block" data-lang="bash">
           <div class="code-block-header">
@@ -602,14 +605,14 @@
           <pre><code><span class="ln">1</span><span class="tok-comment"># Build the transpiler</span>
 <span class="ln">2</span>go build -o orionc ./cmd/orion/main.go
 <span class="ln">3</span>
-<span class="ln">4</span><span class="tok-comment"># Transpile a .ori file</span>
-<span class="ln">5</span>./orionc my_program.ori
+<span class="ln">4</span><span class="tok-comment"># Transpile a .or file</span>
+<span class="ln">5</span>./orionc my_program.or
 <span class="ln">6</span>
 <span class="ln">7</span><span class="tok-comment"># Transpile and run</span>
-<span class="ln">8</span>./orionc -run my_program.ori
+<span class="ln">8</span>./orionc -run my_program.or
 <span class="ln">9</span>
 <span class="ln">10</span><span class="tok-comment"># View tokens and AST (debug)</span>
-<span class="ln">11</span>./orionc -debug my_program.ori</code></pre>
+<span class="ln">11</span>./orionc -debug my_program.or</code></pre>
         </div>
 
         <div class="callout">
@@ -691,11 +694,16 @@
           <pre><code><span class="ln">1</span><span class="tok-fn">writeScreen</span> () {
 <span class="ln">2</span>    io::<span class="tok-fn">write</span>(<span class="tok-str">"hello, world"</span>);
 <span class="ln">3</span>}
-<span class="ln">4</span><span class="tok-fn">writeScreen</span>();</code></pre>
+<span class="ln">4</span><span class="tok-fn">writeScreen</span>();
+<span class="ln">5</span>
+<span class="ln">6</span><span class="tok-comment">// With parameters (no return type)</span>
+<span class="ln">7</span><span class="tok-fn">isPalindrome</span> (<span class="tok-type">integer</span> n) {
+<span class="ln">8</span>    [<span class="tok-type">integer</span>] nArr = n.<span class="tok-fn">toArray</span>();
+<span class="ln">9</span>}</code></pre>
         </div>
 
         <h2 id="arrays"><span class="hash">#</span> Arrays</h2>
-        <p>Typed arrays with <code>[T]</code> syntax and chained methods via <code>:</code>.</p>
+        <p>Typed arrays use <code>[T] name = …</code>. Element types include <code>integer</code>, <code>number</code> (alias of integer), and <code>string</code>. Declare from a literal or from any expression.</p>
 
         <div class="code-block" data-lang="orion">
           <div class="code-block-header">
@@ -706,19 +714,111 @@
             </button>
           </div>
           <pre><code><span class="ln">1</span>[<span class="tok-type">string</span>] names = [<span class="tok-str">"hermes"</span>, <span class="tok-str">"lucas"</span>];
-<span class="ln">2</span>
-<span class="ln">3</span><span class="tok-comment">// Iteration</span>
-<span class="ln">4</span><span class="tok-kw">for</span> index, value :: names {
-<span class="ln">5</span>    io::<span class="tok-fn">write</span>(value);
-<span class="ln">6</span>}
-<span class="ln">7</span>
-<span class="ln">8</span><span class="tok-comment">// Array methods</span>
-<span class="ln">9</span>names:<span class="tok-fn">push</span>(<span class="tok-str">"gusta"</span>);
-<span class="ln">10</span>names:<span class="tok-fn">pop</span>();
-<span class="ln">11</span>names:<span class="tok-fn">first</span>();
-<span class="ln">12</span>names:<span class="tok-fn">last</span>();
-<span class="ln">13</span>names:<span class="tok-fn">remove</span>(<span class="tok-num">0</span>);
-<span class="ln">14</span>names:<span class="tok-fn">removeValue</span>(<span class="tok-str">"hermes"</span>);</code></pre>
+<span class="ln">2</span>[<span class="tok-type">number</span>] digits = <span class="tok-num">12</span>.<span class="tok-fn">toArray</span>();
+<span class="ln">3</span>
+<span class="ln">4</span><span class="tok-comment">// Iteration</span>
+<span class="ln">5</span><span class="tok-kw">for</span> index, value :: names {
+<span class="ln">6</span>    io::<span class="tok-fn">write</span>(value);
+<span class="ln">7</span>}</code></pre>
+        </div>
+
+        <h3 id="array-indexing">Indexing</h3>
+        <p>Access elements with zero-based indices: <code>arr[index]</code>. The index may be a literal, variable, or expression.</p>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copy">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span>[<span class="tok-type">integer</span>] arr = [<span class="tok-num">1</span>, <span class="tok-num">2</span>];
+<span class="ln">2</span>io::<span class="tok-fn">write</span>(arr[<span class="tok-num">0</span>]);   <span class="tok-comment">// 1</span></code></pre>
+        </div>
+
+        <h3 id="array-methods">Array methods</h3>
+        <p>Built-in array operations use <code>arr:method()</code> (colon) or <code>arr.method()</code> (dot) where noted. Transpiles to idiomatic Go (<code>append</code>, <code>len</code>, etc.).</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Syntax</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>push</code></td><td><code>arr:push(x)</code></td><td>Append a value</td></tr>
+              <tr><td><code>pop</code></td><td><code>arr:pop()</code></td><td>Remove and return the last element</td></tr>
+              <tr><td><code>first</code></td><td><code>arr:first()</code></td><td>First element</td></tr>
+              <tr><td><code>last</code></td><td><code>arr:last()</code></td><td>Last element</td></tr>
+              <tr><td><code>remove</code></td><td><code>arr:remove(i)</code></td><td>Remove by index</td></tr>
+              <tr><td><code>removeValue</code></td><td><code>arr:removeValue(x)</code></td><td>Remove first matching value</td></tr>
+              <tr><td><code>length</code></td><td><code>arr.length()</code> or <code>arr:length()</code></td><td>Number of elements</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copy">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span>[<span class="tok-type">integer</span>] arr = [<span class="tok-num">1</span>, <span class="tok-num">2</span>, <span class="tok-num">3</span>];
+<span class="ln">2</span>io::<span class="tok-fn">write</span>(arr.<span class="tok-fn">length</span>());   <span class="tok-comment">// 3</span>
+<span class="ln">3</span>arr:<span class="tok-fn">push</span>(<span class="tok-num">4</span>);
+<span class="ln">4</span>arr:<span class="tok-fn">pop</span>();
+<span class="ln">5</span>arr:<span class="tok-fn">first</span>();
+<span class="ln">6</span>arr:<span class="tok-fn">last</span>();
+<span class="ln">7</span>arr:<span class="tok-fn">remove</span>(<span class="tok-num">0</span>);
+<span class="ln">8</span>arr:<span class="tok-fn">removeValue</span>(<span class="tok-num">2</span>);</code></pre>
+        </div>
+
+        <h3 id="to-array">toArray()</h3>
+        <p>Split a <strong>string</strong> or <strong>integer</strong> into an array — similar to JavaScript’s <code>split</code> on digits or characters. Call with dot notation: <code>value.toArray()</code>. Assign to a typed array; the element type selects the result shape.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Receiver</th>
+                <th>Target type</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>integer</code></td><td><code>[integer]</code> or <code>[number]</code></td><td>Digits as ints (<code>12</code> → <code>[1, 2]</code>)</td></tr>
+              <tr><td><code>string</code></td><td><code>[string]</code></td><td>One character per element</td></tr>
+              <tr><td><code>string</code></td><td><code>[integer]</code></td><td>Each character as int (digit chars)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copy">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span><span class="tok-type">integer</span> number = <span class="tok-num">12</span>;
+<span class="ln">2</span>[<span class="tok-type">number</span>] arrNumber = number.<span class="tok-fn">toArray</span>();
+<span class="ln">3</span>io::<span class="tok-fn">write</span>(arrNumber);   <span class="tok-comment">// [1 2]</span>
+<span class="ln">4</span>
+<span class="ln">5</span><span class="tok-type">string</span> text = <span class="tok-str">"hi"</span>;
+<span class="ln">6</span>[<span class="tok-type">string</span>] chars = text.<span class="tok-fn">toArray</span>();
+<span class="ln">7</span>io::<span class="tok-fn">write</span>(chars);        <span class="tok-comment">// [h i]</span>
+<span class="ln">8</span>
+<span class="ln">9</span><span class="tok-fn">isPalindrome</span> (<span class="tok-type">integer</span> n) {
+<span class="ln">10</span>    [<span class="tok-type">integer</span>] nArr = n.<span class="tok-fn">toArray</span>();
+<span class="ln">11</span>    io::<span class="tok-fn">write</span>(nArr.<span class="tok-fn">length</span>());
+<span class="ln">12</span>}</code></pre>
         </div>
 
         <h2 id="strings"><span class="hash">#</span> String interpolation</h2>
@@ -765,7 +865,8 @@
             </thead>
             <tbody>
               <tr><td><code>string</code></td><td><code>string</code></td></tr>
-              <tr><td><code>integer</code></td><td><code>int</code></td></tr>
+              <tr><td><code>integer</code>, <code>int</code></td><td><code>int</code></td></tr>
+              <tr><td><code>number</code> (array element type)</td><td><code>int</code></td></tr>
               <tr><td><code>bool</code></td><td><code>bool</code></td></tr>
               <tr><td><code>float</code></td><td><code>float64</code></td></tr>
               <tr><td><code>[T]</code></td><td><code>[]T</code></td></tr>
@@ -789,7 +890,7 @@
 │   │   └── <span class="file">ast.go</span>             <span class="comment"># AST nodes</span>
 │   └── <span class="dir">codegen/</span>
 │       └── <span class="file">codegen.go</span>         <span class="comment"># Go code generator</span>
-├── <span class="file">example.ori</span>                <span class="comment"># Orion example</span>
+├── <span class="dir">how_to/</span><span class="file">example.or</span>         <span class="comment"># Orion example</span>
 └── <span class="file">go.mod</span>
         </div>
 
@@ -810,6 +911,9 @@
       <a href="#conditionals" class="toc-link">Conditionals</a>
       <a href="#functions" class="toc-link">Functions</a>
       <a href="#arrays" class="toc-link">Arrays</a>
+      <a href="#array-indexing" class="toc-link sub">Indexing</a>
+      <a href="#array-methods" class="toc-link sub">Array methods</a>
+      <a href="#to-array" class="toc-link sub">toArray()</a>
       <a href="#strings" class="toc-link">Strings</a>
       <a href="#io" class="toc-link">I/O</a>
       <a href="#types" class="toc-link">Type mapping</a>

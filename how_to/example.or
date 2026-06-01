@@ -1,3 +1,10 @@
-bool isPalindrome (integer n) {
-    
+isPalindrome (integer n) {
+    [integer] nArr = n.toArray()
+    [integer] new = []
+    for index, value :: nArr {
+        new.push(nArr[nArr.length() - 1 - index])
+    }
+    io::write(new)
 }
+
+isPalindrome(12)
