@@ -566,10 +566,11 @@
       <div class="nav-section">
         <div class="nav-section-title">Language</div>
         <a href="#variables" class="nav-link">Variables</a>
+        <a href="#operators" class="nav-link">Operators</a>
         <a href="#conditionals" class="nav-link">Conditionals</a>
         <a href="#functions" class="nav-link">Functions</a>
         <a href="#arrays" class="nav-link">Arrays</a>
-        <a href="#array-indexing" class="nav-link" style="padding-left: 36px; font-size: 13px;">Indexing</a>
+        <a href="#array-indexing" class="nav-link" style="padding-left: 36px; font-size: 13px;">Indexing &amp; assignment</a>
         <a href="#array-methods" class="nav-link" style="padding-left: 36px; font-size: 13px;">Array methods</a>
         <a href="#to-array" class="nav-link" style="padding-left: 36px; font-size: 13px;">toArray()</a>
         <a href="#strings" class="nav-link">Strings</a>
@@ -641,6 +642,57 @@
 <span class="ln">4</span><span class="tok-type">float</span> pi = <span class="tok-num">3.14</span>;</code></pre>
         </div>
 
+        <p>After declaration, reassign with <code>name = value</code> (no type prefix).</p>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copy">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span><span class="tok-type">integer</span> count = <span class="tok-num">0</span>;
+<span class="ln">2</span>count = <span class="tok-num">10</span>;</code></pre>
+        </div>
+
+        <h2 id="operators"><span class="hash">#</span> Operators</h2>
+        <p>Comparison and logical operators work in <code>if</code> conditions and expressions.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Operator</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>==</code> <code>!=</code></td><td>Equal / not equal</td></tr>
+              <tr><td><code>&lt;</code> <code>&gt;</code> <code>&lt;=</code> <code>&gt;=</code></td><td>Ordering</td></tr>
+              <tr><td><code>&amp;&amp;</code> <code>||</code> <code>!</code></td><td>And / or / not</td></tr>
+              <tr><td><code>+</code> <code>-</code> <code>*</code> <code>/</code></td><td>Arithmetic</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-block" data-lang="orion">
+          <div class="code-block-header">
+            <span class="lang">orion</span>
+            <button class="copy-btn" aria-label="Copy">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+          <pre><code><span class="ln">1</span><span class="tok-kw">if</span> age == <span class="tok-num">45</span> {
+<span class="ln">2</span>    io::<span class="tok-fn">write</span>(<span class="tok-str">"match"</span>);
+<span class="ln">3</span>}
+<span class="ln">4</span>
+<span class="ln">5</span><span class="tok-kw">if</span> nArr[index] != reversed[index] {
+<span class="ln">6</span>    ok = <span class="tok-bool">false</span>;
+<span class="ln">7</span>}</code></pre>
+        </div>
+
         <h2 id="conditionals"><span class="hash">#</span> Conditionals</h2>
         <p>Orion uses <code>if</code>, <code>or_if</code>, and <code>or</code> for chained conditionals — equivalent to <code>if / else if / else</code> in other languages.</p>
 
@@ -664,7 +716,7 @@
         <h2 id="functions"><span class="hash">#</span> Functions</h2>
 
         <h3>With return value</h3>
-        <p>Functions with a return type use <code>::(...)</code> for implicit return with string interpolation.</p>
+        <p>Functions with a return type use <code>::(expr)</code> for implicit return (strings support <code>$var</code> interpolation).</p>
 
         <div class="code-block" data-lang="orion">
           <div class="code-block-header">
@@ -675,9 +727,18 @@
             </button>
           </div>
           <pre><code><span class="ln">1</span><span class="tok-type">string</span> <span class="tok-fn">helloName</span> (<span class="tok-type">string</span> name) {
-<span class="ln">2</span>    ::(<span class="tok-str">"hello, $name !"</span>);   <span class="tok-comment">// implicit return</span>
+<span class="ln">2</span>    ::(<span class="tok-str">"hello, $name !"</span>);
 <span class="ln">3</span>}
-<span class="ln">4</span><span class="tok-type">string</span> hello = <span class="tok-fn">helloName</span>(<span class="tok-str">"hermes"</span>);</code></pre>
+<span class="ln">4</span><span class="tok-type">string</span> hello = <span class="tok-fn">helloName</span>(<span class="tok-str">"hermes"</span>);
+<span class="ln">5</span>
+<span class="ln">6</span><span class="tok-type">bool</span> <span class="tok-fn">isPalindrome</span> (<span class="tok-type">integer</span> n) {
+<span class="ln">7</span>  [<span class="tok-type">integer</span>] nArr = n.<span class="tok-fn">toArray</span>();
+<span class="ln">8</span>  [<span class="tok-type">integer</span>] reversed = [];
+<span class="ln">9</span>  <span class="tok-kw">for</span> index, _ :: nArr {
+<span class="ln">10</span>    reversed.<span class="tok-fn">push</span>(nArr[nArr.<span class="tok-fn">length</span>() - <span class="tok-num">1</span> - index]);
+<span class="ln">11</span>  }
+<span class="ln">12</span>  ::(<span class="tok-bool">true</span>);
+<span class="ln">13</span>}</code></pre>
         </div>
 
         <h3>Void (no return)</h3>
@@ -722,8 +783,12 @@
 <span class="ln">7</span>}</code></pre>
         </div>
 
-        <h3 id="array-indexing">Indexing</h3>
-        <p>Access elements with zero-based indices: <code>arr[index]</code>. The index may be a literal, variable, or expression.</p>
+        <h3 id="array-indexing">Indexing &amp; assignment</h3>
+        <p>Read elements with <code>arr[index]</code>. Write to an existing index with <code>arr[i] = value</code>. Use <code>arr:push(x)</code> to grow the array — assignment does not append.</p>
+
+        <div class="callout">
+          <strong>Note:</strong> <code>arr[arr.length() - 1] = x</code> replaces the last element; it does not add a new one. To append, use <code>push</code>.
+        </div>
 
         <div class="code-block" data-lang="orion">
           <div class="code-block-header">
@@ -734,7 +799,12 @@
             </button>
           </div>
           <pre><code><span class="ln">1</span>[<span class="tok-type">integer</span>] arr = [<span class="tok-num">1</span>, <span class="tok-num">2</span>];
-<span class="ln">2</span>io::<span class="tok-fn">write</span>(arr[<span class="tok-num">0</span>]);   <span class="tok-comment">// 1</span></code></pre>
+<span class="ln">2</span>[<span class="tok-type">integer</span>] empty = [];
+<span class="ln">3</span>
+<span class="ln">4</span>io::<span class="tok-fn">write</span>(arr[<span class="tok-num">0</span>]);              <span class="tok-comment">// 1</span>
+<span class="ln">5</span>arr[<span class="tok-num">0</span>] = <span class="tok-num">3</span>;                        <span class="tok-comment">// [3, 2]</span>
+<span class="ln">6</span>arr[arr.<span class="tok-fn">length</span>() - <span class="tok-num">1</span>] = <span class="tok-num">9</span>;   <span class="tok-comment">// [3, 9]</span>
+<span class="ln">7</span>arr:<span class="tok-fn">push</span>(<span class="tok-num">4</span>);                      <span class="tok-comment">// [3, 9, 4]</span></code></pre>
         </div>
 
         <h3 id="array-methods">Array methods</h3>
@@ -815,10 +885,12 @@
 <span class="ln">6</span>[<span class="tok-type">string</span>] chars = text.<span class="tok-fn">toArray</span>();
 <span class="ln">7</span>io::<span class="tok-fn">write</span>(chars);        <span class="tok-comment">// [h i]</span>
 <span class="ln">8</span>
-<span class="ln">9</span><span class="tok-fn">isPalindrome</span> (<span class="tok-type">integer</span> n) {
-<span class="ln">10</span>    [<span class="tok-type">integer</span>] nArr = n.<span class="tok-fn">toArray</span>();
-<span class="ln">11</span>    io::<span class="tok-fn">write</span>(nArr.<span class="tok-fn">length</span>());
-<span class="ln">12</span>}</code></pre>
+<span class="ln">9</span><span class="tok-comment">// Reverse digits: 12 → [1,2] then push from end → [2,1]</span>
+<span class="ln">10</span>[<span class="tok-type">integer</span>] nArr = <span class="tok-num">12</span>.<span class="tok-fn">toArray</span>();
+<span class="ln">11</span>[<span class="tok-type">integer</span>] reversed = [];
+<span class="ln">12</span><span class="tok-kw">for</span> index, _ :: nArr {
+<span class="ln">13</span>    reversed.<span class="tok-fn">push</span>(nArr[nArr.<span class="tok-fn">length</span>() - <span class="tok-num">1</span> - index]);
+<span class="ln">14</span>}</code></pre>
         </div>
 
         <h2 id="strings"><span class="hash">#</span> String interpolation</h2>
@@ -891,6 +963,7 @@
 │   └── <span class="dir">codegen/</span>
 │       └── <span class="file">codegen.go</span>         <span class="comment"># Go code generator</span>
 ├── <span class="dir">how_to/</span><span class="file">example.or</span>         <span class="comment"># Orion example</span>
+├── <span class="dir">docs/</span><span class="file">index.html</span>           <span class="comment"># Language documentation</span>
 └── <span class="file">go.mod</span>
         </div>
 
@@ -908,10 +981,11 @@
       <a href="#introduction" class="toc-link">Introduction</a>
       <a href="#usage" class="toc-link">Usage</a>
       <a href="#variables" class="toc-link">Variables</a>
+      <a href="#operators" class="toc-link">Operators</a>
       <a href="#conditionals" class="toc-link">Conditionals</a>
       <a href="#functions" class="toc-link">Functions</a>
       <a href="#arrays" class="toc-link">Arrays</a>
-      <a href="#array-indexing" class="toc-link sub">Indexing</a>
+      <a href="#array-indexing" class="toc-link sub">Indexing &amp; assignment</a>
       <a href="#array-methods" class="toc-link sub">Array methods</a>
       <a href="#to-array" class="toc-link sub">toArray()</a>
       <a href="#strings" class="toc-link">Strings</a>

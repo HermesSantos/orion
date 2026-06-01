@@ -1,10 +1,23 @@
-isPalindrome (integer n) {
+bool isPalindrome (integer n) {
     [integer] nArr = n.toArray()
     [integer] new = []
-    for index, value :: nArr {
+    bool final = false
+
+    // inverte
+    for index, _ :: nArr {
         new.push(nArr[nArr.length() - 1 - index])
     }
-    io::write(new)
+
+    // verifica
+    for index, value :: nArr {
+        if value != new[index] {
+            final = false
+        } or {
+            final = true
+        }
+    }
+
+    ::(final)
 }
 
-isPalindrome(12)
+io::write(isPalindrome(121))

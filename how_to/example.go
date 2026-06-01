@@ -7,7 +7,7 @@ import (
 
 func main() {
 	
-	isPalindrome := func(n int) {
+	isPalindrome := func(n int) bool {
 		nArr := func(n int) []int {
 				s := strconv.Itoa(n)
 				out := make([]int, len(s))
@@ -17,17 +17,22 @@ func main() {
 				return out
 			}(n)
 		new := []int{}
+		var final bool = false
+		_ = final
+		for index, _ := range nArr {
+			_ = index
+			func() { new = append(new, nArr[((len(nArr) - 1) - index)]) }()
+		}
 		for index, value := range nArr {
 			_ = index
-			if (len(new) == 0) {
-				func() { new = append(new, value) }()
+			if (value != new[index]) {
+				final = false
 			} else {
-				fmt.Println((len(new) - 1))
-				new[(len(new) - 1)] = value
+				final = true
 			}
 		}
-		fmt.Println(new)
+		return final
 	}
 	
-	isPalindrome(12)
+	fmt.Println(isPalindrome(121))
 }
